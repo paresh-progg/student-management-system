@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Marks</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar dashboard-sidebar">
+            <div class="sidebar-brand">
+                <img src="images/dav.jpg" alt="DAV Logo" class="brand-logo">
+                <div>
+                    <h2>STUDENT PORTAL</h2>
+                    <p>Student insights in one place</p>
+                </div>
+            </div>
+            <nav class="sidebar-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="index.html">Students</a>
+                <a href="attendance.html">Attendance</a>
+                <a href="marks.html" class="active">Marks</a>
+                <a href="reports.html">Reports</a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>DAV College</p>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Marks</h1>
+                    <p>Add new exam scores and review student performance in each subject.</p>
+                </div>
+                <div class="header-controls">
+                    <div class="quick-links">
+                        <a href="index.html">Students</a>
+                        <a href="attendance.html">Attendance</a>
+                        <a href="marks.html" class="active">Marks</a>
+                        <a href="reports.html">Reports</a>
+                    </div>
+                    <input type="text" id="marksSearch" placeholder="Search Marks...">
+                </div>
+            </div>
+            <div class="content-area">
+                <div class="form-card">
+                    <h3>Add Marks</h3>
+                    <form id="marksForm">
+                        <select id="marksStudent" required>
+                            <option value="">Select Student</option>
+                        </select>
+                        <input type="text" id="marksSubject" placeholder="Subject" required>
+                        <input type="number" id="marksScore" placeholder="Score" required>
+                        <input type="number" id="marksMaxScore" placeholder="Max Score" value="100" required>
+                        <select id="marksSemester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                        <button type="submit">Save Marks</button>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <h3>Marks Records</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Subject</th>
+                                <th>Score</th>
+                                <th>Max</th>
+                                <th>Semester</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marksTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="marks.js"></script>
+</body>
+</html>

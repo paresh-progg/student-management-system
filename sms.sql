@@ -1,0 +1,32 @@
+CREATE DATABASE IF NOT EXISTS sms;
+USE sms;
+
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    roll_no VARCHAR(50) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    course VARCHAR(100) NOT NULL,
+    semester INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    attendance_date DATE NOT NULL,
+    status ENUM('Present', 'Absent') NOT NULL DEFAULT 'Absent',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS marks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    subject VARCHAR(120) NOT NULL,
+    score DECIMAL(6,2) NOT NULL,
+    max_score DECIMAL(6,2) NOT NULL DEFAULT 100,
+    semester INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
