@@ -171,15 +171,6 @@ node server.js
 
 ---
 
-## System Architecture
-
-```
-```
-
----
-
----
-
 ---
 
 ## Author
