@@ -5,7 +5,7 @@ const errorMessage = document.getElementById("errorMessage");
 
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
+
     errorMessage.style.display = "none";
     errorMessage.innerText = "";
 
@@ -30,7 +30,6 @@ loginForm.addEventListener("submit", async (e) => {
             body: JSON.stringify({ username, password })
         });
 
-        console.log("Response status:", response.status);
         const contentType = response.headers.get("content-type") || "";
         const responseText = await response.text();
 
@@ -40,7 +39,6 @@ loginForm.addEventListener("submit", async (e) => {
         }
 
         const data = JSON.parse(responseText);
-        console.log("Response data:", data);
 
         if (response.ok) {
             localStorage.setItem("isLoggedIn", "true");
