@@ -1,11 +1,54 @@
 const reportStudentSelect = document.getElementById("reportStudentSelect");
 const studentReportDetails = document.getElementById("studentReportDetails");
+const role = localStorage.getItem("role");
+let studentId = localStorage.getItem("studentId");
 
-loadSummaryReport();
-loadReportStudentOptions();
+if (role !== "teacher" && reportStudentSelect) {
+    reportStudentSelect.style.display = "none";
+}
+
+function getAuthHeaders() {
+    return {
+        Authorization: `Bearer ${localStorage.getItem("sessionId")}`
+    };
+}
+
+async function initReportPage() {
+    if (role === "teacher") {
+        await loadSummaryReport();
+        await loadReportStudentOptions();
+        return;
+    }
+
+    if (role === "student") {
+        if (!studentId) {
+            const meResponse = await fetch("/api/me", {
+                headers: getAuthHeaders()
+            });
+            if (meResponse.ok) {
+                const meData = await meResponse.json();
+                studentId = meData.user.studentId;
+                if (studentId) {
+                    localStorage.setItem("studentId", studentId);
+                }
+            }
+        }
+
+        if (studentId) {
+            await loadSummaryReport();
+            await loadStudentReport(studentId);
+        } else {
+            studentReportDetails.innerHTML = "<p>Please log in as a student to view your report.</p>";
+        }
+    }
+}
+
+initReportPage();
 
 async function loadSummaryReport() {
-    const response = await fetch("/api/reports/summary");
+    const response = await fetch("/api/reports/summary", {
+        headers: getAuthHeaders()
+    });
     const summary = await response.json();
 
     document.getElementById("reportTotalStudents").innerText = summary.totalStudents;
@@ -16,7 +59,10 @@ async function loadSummaryReport() {
 }
 
 async function loadReportStudentOptions() {
-    const response = await fetch("/api/students");
+    if (!reportStudentSelect) return;
+    const response = await fetch("/api/students", {
+        headers: getAuthHeaders()
+    });
     const students = await response.json();
 
     reportStudentSelect.innerHTML = '<option value="">Select Student</option>';
@@ -27,14 +73,10 @@ async function loadReportStudentOptions() {
     });
 }
 
-reportStudentSelect.addEventListener("change", async () => {
-    const studentId = reportStudentSelect.value;
-    if (!studentId) {
-        studentReportDetails.innerHTML = "";
-        return;
-    }
-
-    const response = await fetch(`/api/reports/student/${studentId}`);
+async function loadStudentReport(id) {
+    const response = await fetch(`/api/reports/student/${id}`, {
+        headers: getAuthHeaders()
+    });
     const report = await response.json();
 
     const attendanceRows = report.attendance.map(row => `
@@ -62,4 +104,16 @@ reportStudentSelect.addEventListener("change", async () => {
             <ul>${marksRows || '<li>No marks records</li>'}</ul>
         </div>
     `;
-});
+}
+
+if (reportStudentSelect) {
+    reportStudentSelect.addEventListener("change", async () => {
+        const selectedId = reportStudentSelect.value;
+             if (!selectedId) {
+            studentReportDetails.innerHTML = "";
+            return;
+        }
+        await loadStudentReport(selectedId);
+    });
+}
+

@@ -4,6 +4,19 @@ const attendanceDate = document.getElementById("attendanceDate");
 const attendanceStatus = document.getElementById("attendanceStatus");
 const attendanceTableBody = document.getElementById("attendanceTableBody");
 const attendanceSearch = document.getElementById("attendanceSearch");
+const role = localStorage.getItem("role");
+
+function getAuthHeaders(isJson = false) {
+    const headers = {
+        Authorization: `Bearer ${localStorage.getItem("sessionId")}`
+    };
+    if (isJson) headers["Content-Type"] = "application/json";
+    return headers;
+}
+
+if (role !== "teacher" && attendanceForm) {
+    attendanceForm.style.display = "none";
+}
 
 loadAttendance();
 loadStudentOptions(attendanceStudent);
@@ -19,7 +32,7 @@ attendanceForm.addEventListener("submit", async (e) => {
 
     const response = await fetch("/api/attendance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(true),
         body: JSON.stringify(record)
     });
 
@@ -30,7 +43,9 @@ attendanceForm.addEventListener("submit", async (e) => {
 });
 
 async function loadStudentOptions(selectElement) {
-    const response = await fetch("/api/students");
+    const response = await fetch("/api/students", {
+        headers: getAuthHeaders()
+    });
     const students = await response.json();
     selectElement.innerHTML = '<option value="">Select Student</option>';
     students.forEach(student => {
@@ -41,7 +56,9 @@ async function loadStudentOptions(selectElement) {
 }
 
 async function loadAttendance() {
-    const response = await fetch("/api/attendance");
+    const response = await fetch("/api/attendance", {
+        headers: getAuthHeaders()
+    });
     const records = await response.json();
     attendanceTableBody.innerHTML = "";
 
@@ -54,7 +71,7 @@ async function loadAttendance() {
                 <td>${record.date}</td>
                 <td>${record.status}</td>
                 <td>
-                    <button class="delete-btn" onclick="deleteAttendance(${record.id})">Delete</button>
+                    ${role === "teacher" ? `<button class="delete-btn" onclick="deleteAttendance(${record.id})">Delete</button>` : ""}
                 </td>
             </tr>
         `;
@@ -63,7 +80,8 @@ async function loadAttendance() {
 
 async function deleteAttendance(id) {
     await fetch(`/api/attendance/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getAuthHeaders()
     });
     loadAttendance();
 }

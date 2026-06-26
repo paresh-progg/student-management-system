@@ -1,74 +1,69 @@
 const form = document.getElementById("studentForm");
 const tableBody = document.getElementById("studentTableBody");
+const searchInput = document.getElementById("searchInput");
+const role = localStorage.getItem("role");
+
+function getAuthHeaders(isJson = false) {
+    const headers = {
+        Authorization: `Bearer ${localStorage.getItem("sessionId")}`
+    };
+    if (isJson) {
+        headers["Content-Type"] = "application/json";
+    }
+    return headers;
+}
+
+if (role !== "teacher" && form) {
+    form.style.display = "none";
+}
 
 loadStudents();
 
-form.addEventListener("submit", async (e) => {
+if (form) {
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    e.preventDefault();
+        const student = {
+            roll_no: document.getElementById("roll").value,
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            course: document.getElementById("course").value,
+            semester: document.getElementById("semester").value
+        };
 
-    const student = {
-        roll_no: document.getElementById("roll").value,
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        course: document.getElementById("course").value,
-        semester: document.getElementById("semester").value
-    };
+        let response;
 
-    let response;
+        if (editingId) {
+            response = await fetch(`/api/students/${editingId}`, {
+                method: "PUT",
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(student)
+            });
+            editingId = null;
+        } else {
+            response = await fetch("/api/students", {
+                method: "POST",
+                headers: getAuthHeaders(true),
+                body: JSON.stringify(student)
+            });
+        }
 
-    if(editingId){
+        const data = await response.json();
+        alert(data.message);
+        form.reset();
+        loadStudents();
+    });
+}
 
-        response = await fetch(
-            `/api/students/${editingId}`,
-            {
-                method:"PUT",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(student)
-            }
-        );
+async function loadStudents() {
+    const response = await fetch("/api/students", {
+        headers: getAuthHeaders()
+    });
 
-        editingId = null;
-
-    }else{
-
-        response = await fetch(
-            "/api/students",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(student)
-            }
-        );
-
-    }
-
-    const data = await response.json();
-
-    alert(data.message);
-
-    form.reset();
-
-    loadStudents();
-
-});
-
-async function loadStudents(){
-
-    const response =
-        await fetch("/api/students");
-
-    const students =
-        await response.json();
-
+    const students = await response.json();
     tableBody.innerHTML = "";
 
     students.forEach(student => {
-
         tableBody.innerHTML += `
         <tr>
             <td>${student.id}</td>
@@ -78,6 +73,7 @@ async function loadStudents(){
             <td>${student.course}</td>
             <td>${student.semester}</td>
             <td>
+                ${role === "teacher" ? `
                 <button
                     class="edit-btn"
                     onclick="editStudent(
@@ -96,20 +92,21 @@ async function loadStudents(){
                     onclick="deleteStudent(${student.id})">
                     Delete
                  </button>
+                ` : ""}
             </td>
         </tr>
         `;
     });
 }
 
-async function deleteStudent(id){
-
-    await fetch(`/api/students/${id}`,{
-        method:"DELETE"
+async function deleteStudent(id) {
+    await fetch(`/api/students/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders()
     });
-
     loadStudents();
 }
+
 let editingId = null;
 
 function editStudent(
@@ -119,46 +116,21 @@ function editStudent(
     email,
     course,
     semester
-){
-
+) {
     editingId = id;
-
     document.getElementById("roll").value = roll_no;
     document.getElementById("name").value = name;
     document.getElementById("email").value = email;
     document.getElementById("course").value = course;
     document.getElementById("semester").value = semester;
-
 }
-const searchInput =
-    document.getElementById("searchInput");
 
-if(searchInput){
-
-    searchInput.addEventListener(
-        "keyup",
-        function(){
-
-            const value =
-                this.value.toLowerCase();
-
-            const rows =
-                document.querySelectorAll(
-                    "#studentTableBody tr"
-                );
-
-            rows.forEach(row => {
-
-                row.style.display =
-                    row.innerText
-                    .toLowerCase()
-                    .includes(value)
-                    ? ""
-                    : "none";
-
-            });
-
-        }
-    );
-
+if (searchInput) {
+    searchInput.addEventListener("keyup", function () {
+        const value = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#studentTableBody tr");
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
+        });
+    });
 }

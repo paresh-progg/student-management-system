@@ -43,6 +43,9 @@ loginForm.addEventListener("submit", async (e) => {
         if (response.ok) {
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("username", username);
+            localStorage.setItem("sessionId", data.sessionId);
+            localStorage.setItem("role", data.role);
+            if (data.studentId) localStorage.setItem("studentId", data.studentId);
             window.location.href = "dashboard.html";
         } else {
             errorMessage.innerText = data.message || "Login failed";

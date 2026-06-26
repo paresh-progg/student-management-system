@@ -6,35 +6,52 @@ const marksMaxScore = document.getElementById("marksMaxScore");
 const marksSemester = document.getElementById("marksSemester");
 const marksTableBody = document.getElementById("marksTableBody");
 const marksSearch = document.getElementById("marksSearch");
+const role = localStorage.getItem("role");
+
+function getAuthHeaders(isJson = false) {
+    const headers = {
+        Authorization: `Bearer ${localStorage.getItem("sessionId")}`
+    };
+    if (isJson) headers["Content-Type"] = "application/json";
+    return headers;
+}
+
+if (role !== "teacher" && marksForm) {
+    marksForm.style.display = "none";
+}
 
 loadMarks();
 loadStudentOptions(marksStudent);
 
-marksForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+if (marksForm) {
+    marksForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-    const record = {
-        student_id: marksStudent.value,
-        subject: marksSubject.value,
-        score: marksScore.value,
-        max_score: marksMaxScore.value,
-        semester: marksSemester.value
-    };
+        const record = {
+            student_id: marksStudent.value,
+            subject: marksSubject.value,
+            score: marksScore.value,
+            max_score: marksMaxScore.value,
+            semester: marksSemester.value
+        };
 
-    const response = await fetch("/api/marks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(record)
+        const response = await fetch("/api/marks", {
+            method: "POST",
+            headers: getAuthHeaders(true),
+            body: JSON.stringify(record)
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        marksForm.reset();
+        loadMarks();
     });
-
-    const data = await response.json();
-    alert(data.message);
-    marksForm.reset();
-    loadMarks();
-});
+}
 
 async function loadStudentOptions(selectElement) {
-    const response = await fetch("/api/students");
+    const response = await fetch("/api/students", {
+        headers: getAuthHeaders()
+    });
     const students = await response.json();
     selectElement.innerHTML = '<option value="">Select Student</option>';
     students.forEach(student => {
@@ -45,7 +62,9 @@ async function loadStudentOptions(selectElement) {
 }
 
 async function loadMarks() {
-    const response = await fetch("/api/marks");
+    const response = await fetch("/api/marks", {
+        headers: getAuthHeaders()
+    });
     const records = await response.json();
     marksTableBody.innerHTML = "";
 
@@ -60,7 +79,7 @@ async function loadMarks() {
                 <td>${record.max_score}</td>
                 <td>${record.semester}</td>
                 <td>
-                    <button class="delete-btn" onclick="deleteMarks(${record.id})">Delete</button>
+                    ${role === "teacher" ? `<button class="delete-btn" onclick="deleteMarks(${record.id})">Delete</button>` : ""}
                 </td>
             </tr>
         `;
@@ -69,7 +88,8 @@ async function loadMarks() {
 
 async function deleteMarks(id) {
     await fetch(`/api/marks/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: getAuthHeaders()
     });
     loadMarks();
 }
@@ -83,3 +103,4 @@ if (marksSearch) {
         });
     });
 }
+

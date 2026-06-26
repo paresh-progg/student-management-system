@@ -85,11 +85,25 @@
     </div>
 
     <script>
+        const dashboardRole = localStorage.getItem("role");
+        const studentId = localStorage.getItem("studentId");
 
         async function loadStats() {
-            const response = await fetch("/api/reports/summary");
-            const summary = await response.json();
+            const response = await fetch("/api/reports/summary", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("sessionId")}`
+                }
+            });
+            if (!response.ok) {
+                document.querySelectorAll(".card").forEach(card => card.style.display = "none");
+                const mainContent = document.querySelector(".content-area");
+                if (mainContent) {
+                    mainContent.innerHTML = "<p style='padding: 16px; color: #444;'>Unable to load dashboard data.</p>";
+                }
+                return;
+            }
 
+            const summary = await response.json();
             document.getElementById("totalStudents").innerText = summary.totalStudents;
             document.getElementById("attendanceCard").innerText = `${summary.attendanceRate}%`;
             document.getElementById("resultsCard").innerText = `${summary.averageScore}%`;
@@ -98,8 +112,17 @@
             document.getElementById("totalMarksRecords").innerText = summary.totalMarks;
         }
 
-        loadStats();
-
+        if (dashboardRole === "teacher") {
+            loadStats();
+        } else if (dashboardRole === "student" && studentId) {
+            loadStats();
+        } else {
+            document.querySelectorAll(".card").forEach(card => card.style.display = "none");
+            const mainContent = document.querySelector(".content-area");
+            if (mainContent) {
+                mainContent.innerHTML = "<p style='padding: 16px; color: #444;'>Please log in as a student or teacher to view dashboard information.</p>";
+            }
+        }
     </script>
 
     <script src="auth.js"></script>
